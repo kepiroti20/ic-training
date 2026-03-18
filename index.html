@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IC Exam Review</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0f172a;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #1e2933;
+      padding: 20px;
+      border-radius: 10px;
+      width: 98%;
+      max-width: 1200px;
+      text-align: center;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background: #38bdf8;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #64748b;
+      cursor: not-allowed;
+      color: #e2e8f0;
+    }
+
+    .completed {
+      background: #22c55e !important;
+      color: white;
+    }
+
+    video {
+      width: 100%;
+      height: 520px;
+      max-height: 75vh;
+      margin-top: 15px;
+      display: none;
+      border-radius: 8px;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <h2>IC Exam Review</h2>
+
+    <!-- LOGIN -->
+    <div id="loginSection">
+      <p>Login to access IC training</p>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+    </div>
+
+    <!-- INTRO -->
+    <div id="introSection" class="hidden">
+      <h3>Welcome to IC Exam Review</h3>
+      <p>
+        📘 Watch all videos carefully.<br>
+        🎯 Complete all lessons before exam.
+      </p>
+      <button onclick="startTraining()">Start Training</button>
+    </div>
+
+    <!-- VIDEO LIST -->
+    <div id="videoListSection" class="hidden">
+      <h3>Select a Video</h3>
+      <p id="progressText"></p>
+      <div id="videoList"></div>
+      <button id="proceedBtn" onclick="showOutro()" disabled>Proceed to Exam</button>
+    </div>
+
+    <!-- VIDEO PLAYER -->
+    <div id="videoSection" class="hidden">
+      <h3 id="videoTitle"></h3>
+
+      <video id="video" controls onended="videoCompleted()">
+        <source id="videoSource" src="" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- OUTRO -->
+    <div id="outroSection" class="hidden">
+      <h3>Before You Proceed</h3>
+      <p>
+        🎉 You have completed all training videos!<br><br>
+        ✔ Review what you've learned<br>
+        ✔ Make sure you understand key concepts<br><br>
+        🎯 You are now ready to take the IC Exam.
+      </p>
+      <button onclick="finishTraining()">Start Exam</button>
+    </div>
+
+  </div>
+
+<script>
+const users = [
+  { email: "agent1@email.com", password: "12345" },
+  { email: "agent2@email.com", password: "12345" }
+];
+
+let currentVideo = 0;
+let watchedVideos = new Set();
+
+const videos = [
+  { src: "1. Fundamentals of life insurance.mp4" },
+  { src: "2. Origin of Life Insurance.mp4" },
+  { src: "3. Basic Life Insurance Plans.mp4" },
+  { src: "4. Riders.mp4" },
+  { src: "5. Underwriting.mp4" },
+  { src: "6. Premium.mp4" },
+  { src: "7.1 Life Insurance Contract - While the insured lives.mp4" },
+  { src: "7.2 Life Insurance Contract - When the insured dies.mp4" },
+  { src: "7.3 Life Insurance Contract - When one quits paying.mp4" },
+  { src: "8. Group Life Insurance.mp4" },
+  { src: "9. Annuities.mp4" },
+  { src: "10. Life Insurance Companies.mp4" },
+  { src: "11. Ethics.mp4" }
+];
+
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const user = users.find(u => u.email === email && u.password === password);
+
+  if (user) {
+    document.getElementById("loginSection").classList.add("hidden");
+    document.getElementById("introSection").classList.remove("hidden");
+  } else {
+    alert("Invalid login");
+  }
+}
+
+function startTraining() {
+  document.getElementById("introSection").classList.add("hidden");
+  document.getElementById("videoListSection").classList.remove("hidden");
+
+  renderVideoList();
+}
+
+function renderVideoList() {
+  const listContainer = document.getElementById("videoList");
+  const proceedBtn = document.getElementById("proceedBtn");
+  const progressText = document.getElementById("progressText");
+
+  listContainer.innerHTML = "";
+
+  videos.forEach((video, index) => {
+    const btn = document.createElement("button");
+    btn.innerText = video.src;
+
+    if (watchedVideos.has(index)) {
+      btn.classList.add("completed");
+      btn.innerText += " ✔";
+    }
+
+    btn.onclick = () => selectVideo(index);
+    listContainer.appendChild(btn);
+  });
+
+  // Update progress
+  progressText.innerText = `Progress: ${watchedVideos.size} / ${videos.length} videos completed`;
+
+  // Enable proceed only if all watched
+  if (watchedVideos.size === videos.length) {
+    proceedBtn.disabled = false;
+  } else {
+    proceedBtn.disabled = true;
+  }
+}
+
+function selectVideo(index) {
+  currentVideo = index;
+
+  document.getElementById("videoListSection").classList.add("hidden");
+  document.getElementById("videoSection").classList.remove("hidden");
+
+  loadVideo();
+}
+
+function loadVideo() {
+  const videoEl = document.getElementById("video");
+  const sourceEl = document.getElementById("videoSource");
+
+  sourceEl.src = videos[currentVideo].src;
+  videoEl.load();
+  videoEl.style.display = "block";
+
+  document.getElementById("videoTitle").innerText = videos[currentVideo].src;
+}
+
+function videoCompleted() {
+  watchedVideos.add(currentVideo);
+
+  alert("Video completed! Returning to menu.");
+
+  document.getElementById("videoSection").classList.add("hidden");
+  document.getElementById("videoListSection").classList.remove("hidden");
+
+  renderVideoList();
+}
+
+function showOutro() {
+  document.getElementById("videoListSection").classList.add("hidden");
+  document.getElementById("outroSection").classList.remove("hidden");
+}
+
+function finishTraining() {
+  alert("Redirecting to Exam...");
+  window.location.href = "https://forms.office.com/Pages/ResponsePage.aspx?id=lT8lDMFS00Od5c9dNAIYXN18ezn18KZNnPtbwFEOkbVUMEVYTzJPMTI4TVEyNDZTNk1XUEdCWDUyQy4u";
+}
+</script>
+
+</body>
+</html>
